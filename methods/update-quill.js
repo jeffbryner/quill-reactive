@@ -1,7 +1,7 @@
 if (Meteor.isServer) {
     Meteor.methods({
-        'updateQuill': function(collectionName, docId, field, delta, editorContents, editorHTML) {
-            console.log('updateQuill server side called with delta',delta );
+        'updateQuill': function(collectionName, docId, field, editorContents, editorHTML) {
+            console.log('updateQuill server side called with contents: ',editorContents );
             var collection = Mongo.Collection.get(collectionName);
             var collectionUpdate = { $set: {} };
             collectionUpdate["$set"][field + "Delta"] = editorContents;

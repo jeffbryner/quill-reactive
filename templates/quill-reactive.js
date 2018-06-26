@@ -6,9 +6,6 @@ const Delta = require('quill-delta');
 textChangesListener = function(delta, oldDelta, source) {
     console.log('text change listener called',source);
     if (source === 'user') {
-        //var oldDelta = new Delta(_.extend({}, this.tmpl.quillEditor.oldDelta));
-        //this.tmpl.quillEditor.oldDelta = this.tmpl.quillEditor.oldDelta.compose(delta);
-        tmpl.quillEditor.oldDelta = tmpl.quillEditor.getContents();
         var opts = tmpl.data;
         var collection = Mongo.Collection.get(opts.collection);
         var doc = collection.findOne({_id: opts.docId});
@@ -16,14 +13,8 @@ textChangesListener = function(delta, oldDelta, source) {
         var editorContents = tmpl.quillEditor.getContents();
         var editorHTML = tmpl.quillEditor.root.innerHTML;
         console.log('textChangesListener', editorContents);
-        if(oldDelta.compose(delta).diff(editorContents).ops.length > 0) {
-            updateDelta = oldDelta.diff(editorContents);
-        } else {
-            updateDelta = delta;
-        }
-        console.log(updateDelta);
-        console.log('calling update Quill', opts.collection, opts.docId, opts.field, updateDelta, editorContents);
-        Meteor.call("updateQuill", opts.collection, opts.docId, opts.field, updateDelta, editorContents, editorHTML);
+        console.log('calling update Quill', opts.collection, opts.docId, opts.field, editorContents, editorHTML);
+        Meteor.call("updateQuill", opts.collection, opts.docId, opts.field, editorContents, editorHTML);
     }
 };
 
@@ -46,9 +37,6 @@ Template.quillReactive.onRendered(function() {
 
     //debug
     window.qe = tmpl;
-
-    tmpl.quillEditor.oldDelta = tmpl.quillEditor.getContents();
-
     // Fix link tooltip from getting stuck
     tmpl.$('.ql-container').mousedown(function(e) {
         if(!($(e.target).is('a'))) {
@@ -56,6 +44,7 @@ Template.quillReactive.onRendered(function() {
         }
     });
     //var authorship = tmpl.quillEditor.getModule('authorship');
+    //Delta is really the quill contents, but contents are expressed as a Delta object
     var fieldDelta = tmpl.data.field + "Delta";
     var collection = Mongo.Collection.get(tmpl.data.collection);
 
@@ -82,11 +71,6 @@ Template.quillReactive.onRendered(function() {
         if(!remoteContents) {
             remoteContents = new Delta();
         }
-        //our last known copy
-        var oldContents = tmpl.quillEditor.oldDelta;
-        //console.log('remoteChanges diff', oldContents,remoteContents);
-        //console.log('diff is',oldContents.diff(remoteContents));
-        //var remoteChanges = oldContents.diff(remoteContents);
         var editorContents = new Delta(tmpl.quillEditor.getContents());
         var remoteChanges = editorContents.diff(remoteContents);
         console.log('remoteChanges diff',remoteChanges);
@@ -96,7 +80,6 @@ Template.quillReactive.onRendered(function() {
             // Make updates, to allow cursor to stay put
             //tmpl.quillEditor.updateContents(localChanges.transform(remoteChanges, true));
             tmpl.quillEditor.updateContents(remoteChanges,'silent');
-            tmpl.quillEditor.oldDelta = tmpl.quillEditor.getContents();
         }
     });
 
@@ -149,28 +132,13 @@ Template.quillReactive.events({
     }
     var collection = Mongo.Collection.get(tmpl.data.collection);
     var fieldDelta = tmpl.data.field + "Delta";
-    var fieldPrevious = tmpl.data.field + "Diff";
     var newContents = tmpl.quillEditor.getContents();
     var newHTML = tmpl.quillEditor.root.innerHTML;
     updateObj = { $set: {}};
     updateObj.$set[fieldDelta] = newContents;
     updateObj.$set[tmpl.data.field] = newHTML;
-    // updateObj.$push[tmpl.data.field + "DeltaUndoStack"] = {
-    //   undo: newContents.diff(tmpl.quillEditor.oldDelta),
-    //   redo: tmpl.quillEditor.oldDelta.diff(newContents)
-    // }
     // This update assumes that we already have the latest contents in our editor
     collection.update({_id: tmpl.data.docId}, updateObj)
-  },
-  'click .ql-discard': function(e, tmpl) {
-    if(!tmpl.data.field) {
-      return;
-    }
-    alertify.confirm("Do you really want to discard your unsaved work? Text will be reverted to its last saved state.")
-      .set('onok', function(closeEvent) {
-        tmpl.quillEditor.setContents(editor.oldDelta);
-      }
-    );
   },
   'click .toggle-live-editing': function(e, tmpl) {
     Session.set("liveEditing", !Session.get("liveEditing"));
