@@ -18,7 +18,6 @@ Package.onUse(function(api) {
   api.use("templating", "client");
   api.use('mongo', 'server');
   api.use('modules');
-  api.use('robertlowe:persistent-reactive-dict@0.1.2');
   api.use('dburles:mongo-collection-instances@0.3.4');
   api.addFiles('templates/quill-reactive.html', 'client');
   api.addFiles('templates/quill-reactive.js', 'client');
