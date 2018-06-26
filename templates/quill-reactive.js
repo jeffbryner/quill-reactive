@@ -1,6 +1,7 @@
 //define quill using require instead of import
 //since we are using an npm dependency in the same file
 const Quill = require('quill');
+const Delta = require('quill-delta');
 
 textChangesListener = function(delta, oldDelta, source) {
     console.log('text change listener called',source);
