@@ -1,4 +1,4 @@
-//define quill using require instead of import
+//define using require instead of import
 //since we are using an npm dependency in the same file
 const Quill = require('quill');
 const Delta = require('quill-delta');
@@ -14,6 +14,7 @@ textChangesListener = function(delta, oldDelta, source) {
         var doc = collection.findOne({_id: opts.docId});
         // Check for other new content besides the last keystroke
         var editorContents = tmpl.quillEditor.getContents();
+        var editorHTML = tmpl.quillEditor.root.innerHTML;
         console.log('textChangesListener', editorContents);
         if(oldDelta.compose(delta).diff(editorContents).ops.length > 0) {
             updateDelta = oldDelta.diff(editorContents);
@@ -22,7 +23,7 @@ textChangesListener = function(delta, oldDelta, source) {
         }
         console.log(updateDelta);
         console.log('calling update Quill', opts.collection, opts.docId, opts.field, updateDelta, editorContents);
-        Meteor.call("updateQuill", opts.collection, opts.docId, opts.field, updateDelta, editorContents);
+        Meteor.call("updateQuill", opts.collection, opts.docId, opts.field, updateDelta, editorContents, editorHTML);
     }
 };
 
