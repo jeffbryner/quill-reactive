@@ -22,7 +22,6 @@ Package.onUse(function(api) {
   api.use('dburles:mongo-collection-instances@0.3.4');
   api.addFiles('templates/quill-reactive.html', 'client');
   api.addFiles('templates/quill-reactive.js', 'client');
-  api.addFiles('collections/quill-stack.js', 'server');
   api.addFiles('methods/update-quill.js', 'server');
 
 });
