@@ -25,6 +25,5 @@ Package.onUse(function(api) {
   api.addFiles('templates/quill-reactive.js', 'client');
   api.addFiles('collections/quill-stack.js', 'server');
   api.addFiles('methods/update-quill.js', 'server');
-  api.addFiles('methods/update-quill-client.js', 'client');
 
 });
