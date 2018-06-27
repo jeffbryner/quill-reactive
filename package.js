@@ -1,5 +1,5 @@
 Package.describe({
-  name: 'jonlachlan:quill-reactive',
+  name: 'jeffbryner:quill-reactive',
   version: '0.0.10',
   summary: 'Helpers for QuillJS rich text (WYSIWYG) editor, with live editing similar to Google Docs or Etherpad',
   // URL to the Git repository containing the source code for this package.
@@ -17,7 +17,7 @@ Package.onUse(function(api) {
   api.versionsFrom('METEOR@1.0');
   api.use("templating", "client");
   api.use('mongo', 'server');
-  api.use('modules');
+  api.use('modules@0.12.0');
   api.use('dburles:mongo-collection-instances@0.3.4');
   api.addFiles('templates/quill-reactive.html', 'client');
   api.addFiles('templates/quill-reactive.js', 'client');
