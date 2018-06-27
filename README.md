@@ -1,8 +1,8 @@
-Update of the quill-reactive project to support live editing
+Update/fork of the quill-reactive project from https://github.com/jonlachlan/quill-reactive to support simple live editing
 
-This package is currently version 0.0.x, suitable for community testing and feedback. See the todos section below for development plans.
+This package is currently version 0.0.10, suitable for community testing and feedback. See the todos section below for development plans.
 
-# quillReactive
+# quill-reactive
 
 Helpers for QuillJS rich text (WYSIWYG) editor, with live editing similar to Google Docs or Etherpad.
 
@@ -10,7 +10,7 @@ See this example: http://quill-reactive-ot.meteor.com
 
 To add it to your project:
 
-`meteor add jonlachlan:quill-reactive`
+`meteor add jeffbryner:quill-reactive`
 
 To use the `quillReactive` template, provide arguments for collectionName, docId and field.
 
@@ -19,10 +19,14 @@ To use the `quillReactive` template, provide arguments for collectionName, docId
 ```
 
 Note that `collection` should be the MongoDB collection name, not the global variable.
+docId is the collection _id field value of the item in the collection
+field is the name of the field in the item that you'd like to deposit the resulting HTML
+
+This package will create a 'fieldNameDelta' field that will hold the ongoing quill-delta that represents the contents of the quill editor.
 
 ## About
 
-Quill uses `ottypes rich-text` for performing operational transform (OT) on changes to rich text. It also has terrific modules such as toolbars, undo manager, authorship highlighting, and multiple cursors.
+Quill uses deltas for performing operational transform (OT) on changes to rich text rendered as HTML. The full toolbar is supplied in this instance, no authorship or multiple cursors are currently implemented.
 
 ### Live Editing
 
@@ -30,17 +34,15 @@ This package combines the features of Quill with the data reactivity of Meteor. 
 
 Live edits are optional, so you can also work on drafting changes without, and saving whenever you are ready.
 
-### Offline Edits and Late Updates
+### Offline Edits/ Late Updates / Drafts
 
-You can also make offline edits, which are seamlessly re-integrated when you get back online.
+Only live editing is supported in this fork to allow for a simpler update model.
 
-### Drafts
-
-QuillReactive uses a persistent Session variable, so drafts are not lost if the user reloads the page.
 
 ## Todos
 
+* Authorship tracking
+* Multiple cursors
 * Customizable settings helpers (e.g., toolbar buttons)
-* Styling support for UI frameworks such as Bootstrap and Semantic UI
-* Default options for authorship and multiple cursors
-* Improve documentation for various usage possibilities
+* Consider offline modes
+
