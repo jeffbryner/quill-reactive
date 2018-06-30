@@ -32,7 +32,6 @@ Quill uses deltas for performing operational transform (OT) on changes to rich t
 
 This package combines the features of Quill with the data reactivity of Meteor. The result is a text editor that has the same live editing features as Google Docs and Etherpad.
 
-Live edits are optional, so you can also work on drafting changes without, and saving whenever you are ready.
 
 ### Offline Edits/ Late Updates / Drafts
 
