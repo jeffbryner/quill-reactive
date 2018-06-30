@@ -3,8 +3,15 @@
 const Quill = require('quill');
 const Delta = require('quill-delta');
 
+//log only in debug mode
+debugLog=function(logthis){
+    if (typeof console !== 'undefined') {
+        console.log(logthis);
+    }
+};
+
 textChangesListener = function(delta, oldDelta, source) {
-    console.log('text change listener called',source);
+    debugLog('text change listener called',source);
     if (source === 'user') {
         var opts = tmpl.data;
         var collection = Mongo.Collection.get(opts.collection);
@@ -12,8 +19,8 @@ textChangesListener = function(delta, oldDelta, source) {
         // Check for other new content besides the last keystroke
         var editorContents = tmpl.quillEditor.getContents();
         var editorHTML = tmpl.quillEditor.root.innerHTML;
-        console.log('textChangesListener', editorContents);
-        console.log('calling update Quill', opts.collection, opts.docId, opts.field, editorContents, editorHTML);
+        debugLog('textChangesListener', editorContents);
+        debugLog('calling update Quill', opts.collection, opts.docId, opts.field, editorContents, editorHTML);
         Meteor.call("updateQuill", opts.collection, opts.docId, opts.field, editorContents, editorHTML);
     }
 };
@@ -73,7 +80,7 @@ Template.quillReactive.onRendered(function() {
         }
         var editorContents = new Delta(tmpl.quillEditor.getContents());
         var remoteChanges = editorContents.diff(remoteContents);
-        console.log('remoteChanges diff',remoteChanges);
+        cdebugLog('remoteChanges diff',remoteChanges);
 
         //var localChanges = oldContents.diff(editorContents);
         if(remoteChanges.ops.length > 0) {
@@ -85,13 +92,13 @@ Template.quillReactive.onRendered(function() {
 
     Tracker.autorun(function() {
         if(Session.get("liveEditing") && Meteor.status().connected) {
-            console.log('setting up text changes listener');
+            debugLog('setting up text changes listener');
             if (tmpl.quillEditor){
                 tmpl.quillEditor.on('text-change', textChangesListener);
             }
-            console.log('done setting up text changes listener');
+            debugLog('done setting up text changes listener');
         } else {
-            console.log('removing text changes listener');
+            debugLog('removing text changes listener');
             if (tmpl.quillEditor){
                 tmpl.quillEditor.off("text-change", textChangesListener);
             }
@@ -125,9 +132,9 @@ Template.quillReactive.helpers({
 
 Template.quillReactive.events({
   'click .ql-save': function(e, tmpl) {
-      console.log('save was clicked');
+    debugLog('save was clicked');
     if(!tmpl.data.field) {
-        console.log('no data field, exiting save');
+        debugLog('no data field, exiting save');
       return;
     }
     var collection = Mongo.Collection.get(tmpl.data.collection);
