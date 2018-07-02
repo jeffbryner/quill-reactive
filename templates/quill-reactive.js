@@ -80,7 +80,7 @@ Template.quillReactive.onRendered(function() {
         }
         var editorContents = new Delta(tmpl.quillEditor.getContents());
         var remoteChanges = editorContents.diff(remoteContents);
-        cdebugLog('remoteChanges diff',remoteChanges);
+        debugLog('remoteChanges diff',remoteChanges);
 
         //var localChanges = oldContents.diff(editorContents);
         if(remoteChanges.ops.length > 0) {
