@@ -2,6 +2,9 @@
 //since we are using an npm dependency in the same file
 const Quill = require('quill');
 const Delta = require('quill-delta');
+require('meteor/rocketchat:streamer');
+const streamer = new Meteor.Streamer('quill');
+
 
 //log only in debug mode
 debugLog=function(logthis){
@@ -10,24 +13,40 @@ debugLog=function(logthis){
     }
 };
 
+applyDelta = function(delta){
+    var editorContents = new Delta(tmpl.quillEditor.getContents());
+    var remoteChanges = delta;
+    if(remoteChanges.ops.length > 0) {
+        // Make updates, to allow cursor to stay put
+        tmpl.quillEditor.updateContents(remoteChanges,'silent');
+    }
+}
+
 textChangesListener = function(delta, oldDelta, source) {
-    debugLog('text change listener called',source);
+    console.log('text change listener called',delta, oldDelta, source);
     if (source === 'user') {
-        var opts = tmpl.data;
-        var collection = Mongo.Collection.get(opts.collection);
-        var doc = collection.findOne({_id: opts.docId});
+        //var opts = tmpl.data;
+        //var collection = Mongo.Collection.get(opts.collection);
+        //var doc = collection.findOne({_id: opts.docId});
         // Check for other new content besides the last keystroke
-        var editorContents = tmpl.quillEditor.getContents();
-        var editorHTML = tmpl.quillEditor.root.innerHTML;
-        debugLog('textChangesListener', editorContents);
-        debugLog('calling update Quill', opts.collection, opts.docId, opts.field, editorContents, editorHTML);
-        Meteor.call("updateQuill", opts.collection, opts.docId, opts.field, editorContents, editorHTML);
+        //var editorContents = tmpl.quillEditor.getContents();
+        //var editorHTML = tmpl.quillEditor.root.innerHTML;
+        //debugLog('textChangesListener', editorContents);
+        //debugLog('calling update Quill', opts.collection, opts.docId, opts.field, editorContents, editorHTML);
+        //Meteor.call("updateQuill", opts.collection, opts.docId, opts.field, editorContents, editorHTML);
+
+        if (tmpl.streamer){
+            tmpl.streamer.emit('delta',delta);
+            console.log('emitted', delta)
+        }
     }
 };
 
 Template.quillReactive.onCreated(function() {
     var tmpl = this;
     tmpl.quillEditor = {};
+    tmpl.streamer = streamer;
+
 });
 
 Template.quillReactive.onRendered(function() {
@@ -42,8 +61,11 @@ Template.quillReactive.onRendered(function() {
         theme: 'snow'
     });
 
+    tmpl.streamer.on('delta',function(delta){ console.log(delta);});
+    tmpl.streamer.on('delta',applyDelta);
     //debug
     window.qe = tmpl;
+
     // Fix link tooltip from getting stuck
     tmpl.$('.ql-container').mousedown(function(e) {
         if(!($(e.target).is('a'))) {
