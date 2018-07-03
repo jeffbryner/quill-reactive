@@ -25,16 +25,6 @@ applyDelta = function(delta){
 textChangesListener = function(delta, oldDelta, source) {
     console.log('text change listener called',delta, oldDelta, source);
     if (source === 'user') {
-        //var opts = tmpl.data;
-        //var collection = Mongo.Collection.get(opts.collection);
-        //var doc = collection.findOne({_id: opts.docId});
-        // Check for other new content besides the last keystroke
-        //var editorContents = tmpl.quillEditor.getContents();
-        //var editorHTML = tmpl.quillEditor.root.innerHTML;
-        //debugLog('textChangesListener', editorContents);
-        //debugLog('calling update Quill', opts.collection, opts.docId, opts.field, editorContents, editorHTML);
-        //Meteor.call("updateQuill", opts.collection, opts.docId, opts.field, editorContents, editorHTML);
-
         if (tmpl.streamer){
             tmpl.streamer.emit('delta',delta);
             console.log('emitted', delta)
@@ -61,7 +51,6 @@ Template.quillReactive.onRendered(function() {
         theme: 'snow'
     });
 
-    tmpl.streamer.on('delta',function(delta){ console.log(delta);});
     tmpl.streamer.on('delta',applyDelta);
     //debug
     window.qe = tmpl;
