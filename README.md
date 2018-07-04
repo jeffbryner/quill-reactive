@@ -6,7 +6,7 @@ This package is currently version 0.0.10, suitable for community testing and fee
 
 Helpers for QuillJS rich text (WYSIWYG) editor, with live editing similar to Google Docs or Etherpad.
 
-See this example: http://quill-reactive-ot.meteor.com
+You can see a demo of it here: http://quill-realtime-demo.jeffbryner.com:3000/
 
 To add it to your project:
 
