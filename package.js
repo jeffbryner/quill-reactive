@@ -22,7 +22,7 @@ Package.onUse(function(api) {
   api.use('rocketchat:streamer@0.6.2');
   api.addFiles('templates/quill-reactive.html', 'client');
   api.addFiles('templates/quill-reactive.js', 'client');
-  api.addFiles('methods/update-quill.js', 'server');
+  api.addFiles('methods/server-methods.js', 'server');
   api.addFiles('main.js');
 
 

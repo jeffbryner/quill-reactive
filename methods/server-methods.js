@@ -8,6 +8,16 @@ if (Meteor.isServer) {
             collectionUpdate["$set"][field] = editorHTML;
             collection.update({_id: docId}, collectionUpdate)
             //console.log('collection update', collectionUpdate);
-        } //end updateQuill
+        }, //end updateQuill
+        'createStreamer': function(streamerName){
+            // called by the template to create a streamer formatted
+            // collection-docId-field
+            // so we have a synchronized server/client stream dedicated to each field
+            // being live edited
+            const streamer = new Meteor.Streamer(streamerName);
+            streamer.allowRead('all');  // Everyone can read all events
+            streamer.allowEmit('all');  // Everyone can emit all events
+            streamer.allowWrite('all'); // Everyone can write
+        } //end createStreamer
     }) //end Meteor.methods
 };
