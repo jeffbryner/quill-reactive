@@ -3,8 +3,6 @@
 const Quill = require('quill');
 const Delta = require('quill-delta');
 require('meteor/rocketchat:streamer');
-const streamer = new Meteor.Streamer('quill');
-
 
 //log only in debug mode
 debugLog=function(logthis){
@@ -35,7 +33,12 @@ textChangesListener = function(delta, oldDelta, source) {
 Template.quillReactive.onCreated(function() {
     var tmpl = this;
     tmpl.quillEditor = {};
-    tmpl.streamer = streamer;
+    // tell the server side to create a stream
+    // allowing server-side to set permissions
+    tmpl.streamName = tmpl.data.collection + '-' + tmpl.data.docId + '-' + tmpl.data.field
+    Meteor.call('createStreamer',tmpl.streamName)
+    // create/get a handle to the client-side streamer
+    tmpl.streamer = new Meteor.Streamer(tmpl.streamName);;
 
 });
 
@@ -102,7 +105,7 @@ Template.quillReactive.onRendered(function() {
     });
 
     Tracker.autorun(function() {
-        if(Session.get("liveEditing") && Meteor.status().connected) {
+        if(Meteor.status().connected) {
             debugLog('setting up text changes listener');
             if (tmpl.quillEditor){
                 tmpl.quillEditor.on('text-change', textChangesListener);
@@ -118,9 +121,6 @@ Template.quillReactive.onRendered(function() {
 });
 
 Template.quillReactive.helpers({
-  liveEditing: function() {
-    return Session.get("liveEditing");
-  },
   connection: function() {
     status = Meteor.status().status;
     return {
