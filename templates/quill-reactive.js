@@ -21,7 +21,7 @@ applyDelta = function(delta){
 }
 
 textChangesListener = function(delta, oldDelta, source) {
-    console.log('text change listener called',delta, oldDelta, source);
+    debug.log('text change listener called',delta, oldDelta, source);
     if (source === 'user') {
         if (tmpl.streamer){
             tmpl.streamer.emit('delta',delta);
@@ -64,7 +64,6 @@ Template.quillReactive.onRendered(function() {
         $('.ql-tooltip.ql-link-tooltip:not(.editing)').css('left', '-10000px');
         }
     });
-    //var authorship = tmpl.quillEditor.getModule('authorship');
     //Delta is really the quill contents, but contents are expressed as a Delta object
     var fieldDelta = tmpl.data.field + "Delta";
     var collection = Mongo.Collection.get(tmpl.data.collection);
@@ -80,6 +79,7 @@ Template.quillReactive.onRendered(function() {
         var doc = collection.findOne({_id:tmpl.data.docId});
 
         if(!doc) {
+            debugLog("no doc found");
             return;
         }
 
