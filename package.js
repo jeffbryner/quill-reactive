@@ -17,6 +17,7 @@ Package.onUse(function(api) {
   api.versionsFrom('METEOR@1.0');
   api.use("templating", "client");
   api.use('mongo', 'server');
+  api.use('underscore','client');
   api.use('modules@0.12.0');
   api.use('dburles:mongo-collection-instances@0.3.4');
   api.use('rocketchat:streamer@0.6.2');

@@ -21,7 +21,8 @@ applyDelta = function(delta){
 }
 
 textChangesListener = function(delta, oldDelta, source) {
-    debug.log('text change listener called',delta, oldDelta, source);
+    console.log('text change listener called',delta, oldDelta, source);
+
     if (source === 'user') {
         if (tmpl.streamer){
             tmpl.streamer.emit('delta',delta);
@@ -29,6 +30,23 @@ textChangesListener = function(delta, oldDelta, source) {
         }
     }
 };
+
+saveQuillContents = function(tmpl){
+    debugLog('save was clicked');
+    if(!tmpl.data.field) {
+        debugLog('no data field, exiting save');
+      return;
+    }
+    var collection = Mongo.Collection.get(tmpl.data.collection);
+    var fieldDelta = tmpl.data.field + "Delta";
+    var newContents = tmpl.quillEditor.getContents();
+    var newHTML = tmpl.quillEditor.root.innerHTML;
+    updateObj = { $set: {}};
+    updateObj.$set[fieldDelta] = newContents;
+    updateObj.$set[tmpl.data.field] = newHTML;
+    // This update assumes that we already have the latest contents in our editor
+    collection.update({_id: tmpl.data.docId}, updateObj)
+}
 
 Template.quillReactive.onCreated(function() {
     var tmpl = this;
@@ -143,25 +161,17 @@ Template.quillReactive.helpers({
 
 Template.quillReactive.events({
   'click .ql-save': function(e, tmpl) {
-    debugLog('save was clicked');
-    if(!tmpl.data.field) {
-        debugLog('no data field, exiting save');
-      return;
-    }
-    var collection = Mongo.Collection.get(tmpl.data.collection);
-    var fieldDelta = tmpl.data.field + "Delta";
-    var newContents = tmpl.quillEditor.getContents();
-    var newHTML = tmpl.quillEditor.root.innerHTML;
-    updateObj = { $set: {}};
-    updateObj.$set[fieldDelta] = newContents;
-    updateObj.$set[tmpl.data.field] = newHTML;
-    // This update assumes that we already have the latest contents in our editor
-    collection.update({_id: tmpl.data.docId}, updateObj)
+    saveQuillContents(tmpl);
   },
   'click .toggle-live-editing': function(e, tmpl) {
     Session.set("liveEditing", !Session.get("liveEditing"));
   },
   'click .ql-reconnect': function(e, tmpl) {
     Meteor.reconnect();
-  }
+  },
+  // input isn't enough since toolbar changes don't trigger
+  'input .ql-editor': _.debounce(function(e,tmpl){
+      console.log('editor debounce input');
+      saveQuillContents(tmpl);
+  } , 500)
 });
