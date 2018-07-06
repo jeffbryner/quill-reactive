@@ -45,3 +45,39 @@ Only live editing is supported in this fork to allow for a simpler update model.
 * Customizable settings helpers (e.g., toolbar buttons)
 * Consider offline modes
 
+
+## Consistency Model
+As noted in https://en.wikipedia.org/wiki/Operational_transformation establishing a consistency model
+is important in collaborative editing schemes. This project started with an ordered 'stack' that
+preferred offline editing. This fork prefers/requires online, live editing and takes the following approach to
+establishing consistency:
+
+### Components/Advantages
+Quill operates most efficiently using Deltas which are small incremental changes based on a current state. It
+is very easy to generate a delta (per keystroke even), and apply it to an existing editor contents.
+Quill Documents are natively stored as a series of actions. These actions can be Delta'd against a current editor contents to product and apply changes to achieve consistency.
+
+Streams via https://github.com/RocketChat/meteor-streamer are highly efficient ways to establish a channel for sending and receiving messages.
+
+### Concept of operations
+Deltas are sent per edit operation (keystroke, format change, delete) and applied as they are received. However without corrective measures this has the following bugs:
+- Network issues (drops/latency) can result in an editor being out of sync such that resulting deltas do not
+accomplish the same change as the originating editor.
+- A new editor joining a stream without 'saved' content will get deltas that are out of sync
+- Saves must be performed manually to preserve edited contents
+
+To combat these issues, this package does the following:
+- On template render, the template joins a stream dedicated to all clients working on the field
+- On template render, a reactive subscription to the field is established ala traditional meteor
+- On 'text-change', event from quill a delta is sent to the stream (capturing single keystrokes, hotkey format changes, etc)
+- On input, a _.debounced save is made at 500 millisecond intervals (syncing newcomers, allowing for fast typing/copy pastes, etc)
+- On toolbar click a _.debounced save is made at 500 millisecond intervals to capture toolbar format changes since they don't show up in other events.
+
+## Misc Ideas
+If the event capture/steam isn't sufficient, consider:
+- include hash with delta. If hash doesn't match current contents do not apply delta but either
+  - pull down last sync'd copy
+  - request a save/sync
+  - wait for a save
+- New client entering stream forces sync/save
+
