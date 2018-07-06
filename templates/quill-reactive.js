@@ -173,5 +173,10 @@ Template.quillReactive.events({
   'input .ql-editor': _.debounce(function(e,tmpl){
       console.log('editor debounce input');
       saveQuillContents(tmpl);
-  } , 500)
+  } , 500),
+  // toolbar format changes aren't capture by the input event
+  'click .ql-toolbar': _.debounce(function(e,tmpl){
+    console.log('editor debounce format change');
+    saveQuillContents(tmpl);
+} , 500),
 });
