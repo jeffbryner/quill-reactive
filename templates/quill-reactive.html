@@ -1,7 +1,7 @@
 <template name="quillReactive">
     <link href="//cdn.quilljs.com/1.0.0/quill.snow.css" rel="stylesheet">
-    <div class="ql-containers {{#if hasEdits}}unsaved{{/if}}">
-        <div id="status" class="needsclick status">
+    <div class="ql-containers">
+        <div id="status" class="status">
             <button class='ql-save'>save</button>
         </div>
         <div id="toolbar">
@@ -44,7 +44,7 @@
             </span>
         </div>
         <div class="ql-editor" id="editor-{{docId}}">
-            <div class="needsclick" contenteditable=true spellcheck=false></div>
+            <div contenteditable=true spellcheck=false></div>
         </div>
     </div>
 </template>
