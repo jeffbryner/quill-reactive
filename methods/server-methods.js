@@ -8,6 +8,6 @@ if (Meteor.isServer) {
             collectionUpdate["$set"][field] = editorHTML;
             collection.update({_id: docId}, collectionUpdate)
             //console.log('collection update', collectionUpdate);
-        } //end updateQuill
+        }, //end updateQuill
     }) //end Meteor.methods
 };
