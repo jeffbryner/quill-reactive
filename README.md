@@ -67,11 +67,14 @@ accomplish the same change as the originating editor.
 - Saves must be performed manually to preserve edited contents
 
 To combat these issues, this package does the following:
-- On template render, the template joins a stream dedicated to all clients working on the field
+- On template render, the template joins a stream dedicated to all quill-reactive clients
+- The template registers for events emitted on 'collection-docId-fieldName-delta'
 - On template render, a reactive subscription to the field is established ala traditional meteor
-- On 'text-change', event from quill a delta is sent to the stream (capturing single keystrokes, hotkey format changes, etc)
+- On 'text-change', event from quill a delta is sent to the stream (capturing single keystrokes, backspaces, hotkey format changes, etc)
 - On input, a _.debounced save is made at 500 millisecond intervals (syncing newcomers, allowing for fast typing/copy pastes, etc)
 - On toolbar click a _.debounced save is made at 500 millisecond intervals to capture toolbar format changes since they don't show up in other events.
+
+Note: Originally there was one stream per field, but streams need to be created prior to a client using them or the first client doesn't receive events (for some reason). So a common stream is created server-side for clients to join.
 
 ## Misc Ideas
 If the event capture/steam isn't sufficient, consider:

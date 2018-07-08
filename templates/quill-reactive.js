@@ -12,6 +12,7 @@ debugLog=function(logthis){
 };
 
 applyDelta = function(delta){
+    console.log('applying',delta);
     var editorContents = new Delta(tmpl.quillEditor.getContents());
     var remoteChanges = delta;
     if(remoteChanges.ops.length > 0) {
@@ -21,12 +22,11 @@ applyDelta = function(delta){
 }
 
 textChangesListener = function(delta, oldDelta, source) {
-    console.log('text change listener called',delta, oldDelta, source);
-
+    //console.log('text change listener called',delta, oldDelta, source);
     if (source === 'user') {
         if (tmpl.streamer){
-            tmpl.streamer.emit('delta',delta);
-            console.log('emitted', delta)
+            tmpl.streamer.emit(tmpl.streamEventName,delta);
+            //console.log('emitted', delta)
         }
     }
 };
@@ -51,13 +51,11 @@ saveQuillContents = function(tmpl){
 Template.quillReactive.onCreated(function() {
     var tmpl = this;
     tmpl.quillEditor = {};
-    // tell the server side to create a stream
-    // allowing server-side to set permissions
-    tmpl.streamName = tmpl.data.collection + '-' + tmpl.data.docId + '-' + tmpl.data.field
-    Meteor.call('createStreamer',tmpl.streamName)
-    // create/get a handle to the client-side streamer
-    tmpl.streamer = new Meteor.Streamer(tmpl.streamName);;
-
+    // connect to the streamer for changes
+    // we watch for events on our field
+    tmpl.streamEventName = tmpl.data.collection + '-' + tmpl.data.docId + '-' + tmpl.data.field + '-delta'
+    // new grabs a handle to the exisiting one created by the server
+    tmpl.streamer = new Meteor.Streamer('quill-reactive-streamer');
 });
 
 Template.quillReactive.onRendered(function() {
@@ -72,7 +70,7 @@ Template.quillReactive.onRendered(function() {
         theme: 'snow'
     });
 
-    tmpl.streamer.on('delta',applyDelta);
+    tmpl.streamer.on(tmpl.streamEventName,applyDelta);
     //debug
     window.qe = tmpl;
 
@@ -93,7 +91,6 @@ Template.quillReactive.onRendered(function() {
 
     Tracker.autorun(function() {
         //autorun to sync quill editor contents to the mongo Delta/content
-
         var doc = collection.findOne({_id:tmpl.data.docId});
 
         if(!doc) {
@@ -138,33 +135,9 @@ Template.quillReactive.onRendered(function() {
     });
 });
 
-Template.quillReactive.helpers({
-  connection: function() {
-    status = Meteor.status().status;
-    return {
-      connected: function() { return (status === "connected")},
-      connecting: function() { return (status === "connecting")},
-      offline: function() { return (status === "offline" || status === "waiting")}
-    }
-  },
-  hasEdits: function() {
-    // var tmpl = Template.instance();
-    // var unsavedChanges = QuillDrafts.get(tmpl.data.collection + "-" + tmpl.data.docId + "-" + tmpl.data.field);
-    // if(tmpl.quillEditor && unsavedChanges) {
-    //   var hasEdits = (unsavedChanges && unsavedChanges.draft && unsavedChanges.draft.ops.length > 0)
-    //   return (hasEdits)
-    // }
-    return true;
-  }
-});
-
-
 Template.quillReactive.events({
   'click .ql-save': function(e, tmpl) {
     saveQuillContents(tmpl);
-  },
-  'click .toggle-live-editing': function(e, tmpl) {
-    Session.set("liveEditing", !Session.get("liveEditing"));
   },
   'click .ql-reconnect': function(e, tmpl) {
     Meteor.reconnect();
