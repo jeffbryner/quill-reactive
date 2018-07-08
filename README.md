@@ -1,6 +1,6 @@
 Update/fork of the quill-reactive project from https://github.com/jonlachlan/quill-reactive to support simple live editing
 
-This package is currently version 0.0.10, suitable for community testing and feedback. See the todos section below for development plans.
+This package is currently version 0.0.11, suitable for community testing and feedback. See the todos section below for development plans.
 
 # quill-reactive
 
