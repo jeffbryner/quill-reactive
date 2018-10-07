@@ -15,7 +15,7 @@ debugLog=function(logthis){
 };
 
 applyDelta = function(delta){
-    console.log('applying',delta);
+    console.log('applying delta',delta);
     var editorContents = new Delta(tmpl.quillEditor.getContents());
     var remoteChanges = delta;
     if(remoteChanges.ops.length > 0) {
@@ -24,12 +24,38 @@ applyDelta = function(delta){
     }
 }
 
+applyCursor = function (cursorEvent){
+    console.log('applying cursor:',cursorEvent);
+    tmpl.cursors.setCursor(cursorEvent.userid,
+        cursorEvent.range,
+        cursorEvent.name,
+        cursorEvent.color);
+    tmpl.cursors.update();
+}
+
 textChangesListener = function(delta, oldDelta, source) {
     //console.log('text change listener called',delta, oldDelta, source);
     if (source === 'user') {
         if (tmpl.streamer){
             tmpl.streamer.emit(tmpl.streamDeltaEventName,delta);
             //console.log('emitted', delta)
+        }
+    }
+};
+
+textSelectionListener = function(range, oldRange, source) {
+    //console.log('text selection listener called',range, oldRange, source);
+    if (source === 'user') {
+        if (tmpl.streamer && range){
+            // fixup strange bug where cursor is off by one
+            range.index = Math.max(0,range.index-1);
+            cursorEvent={
+                userid:tmpl.cursors.userid,
+                range: range,
+                name: 'User 1',
+                color: 'red'}
+            tmpl.streamer.emit(tmpl.streamCursorEventName,cursorEvent);
+            console.log('emitted', cursorEvent);
         }
     }
 };
@@ -57,6 +83,7 @@ Template.quillReactive.onCreated(function() {
     // connect to the streamer for changes
     // we watch for events on our field
     tmpl.streamDeltaEventName = tmpl.data.collection + '-' + tmpl.data.docId + '-' + tmpl.data.field + '-delta'
+    tmpl.streamCursorEventName = tmpl.data.collection + '-' + tmpl.data.docId + '-' + tmpl.data.field + '-cursor'
     // new grabs a handle to the exisiting one created by the server
     tmpl.streamer = new Meteor.Streamer('quill-reactive-streamer');
 });
@@ -72,13 +99,17 @@ Template.quillReactive.onRendered(function() {
     tmpl.quillEditor = new Quill('#editor-' + tmpl.data.docId, {
         modules: {
         'toolbar': '#toolbar',
-        cursors: true
+        cursors: {  autoRegisterListener: false,
+                    hideDelay:1000}
         },
         theme: 'snow'
     });
+    tmpl.cursors = tmpl.quillEditor.getModule('cursors');
+    tmpl.cursors.userid = Math.floor(Math.random(0,10)*10);
 
 
     tmpl.streamer.on(tmpl.streamDeltaEventName,applyDelta);
+    tmpl.streamer.on(tmpl.streamCursorEventName, applyCursor);
     //debug
     window.qe = tmpl;
 
@@ -132,12 +163,14 @@ Template.quillReactive.onRendered(function() {
             debugLog('setting up text changes listener');
             if (tmpl.quillEditor){
                 tmpl.quillEditor.on('text-change', textChangesListener);
+                tmpl.quillEditor.on('selection-change', textSelectionListener);
             }
             debugLog('done setting up text changes listener');
         } else {
             debugLog('removing text changes listener');
             if (tmpl.quillEditor){
                 tmpl.quillEditor.off("text-change", textChangesListener);
+                tmpl.quillEditor.off('selection-change', textSelectionListener);
             }
         }
     });
