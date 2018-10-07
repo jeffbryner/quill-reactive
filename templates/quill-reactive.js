@@ -28,7 +28,7 @@ textChangesListener = function(delta, oldDelta, source) {
     //console.log('text change listener called',delta, oldDelta, source);
     if (source === 'user') {
         if (tmpl.streamer){
-            tmpl.streamer.emit(tmpl.streamEventName,delta);
+            tmpl.streamer.emit(tmpl.streamDeltaEventName,delta);
             //console.log('emitted', delta)
         }
     }
@@ -56,7 +56,7 @@ Template.quillReactive.onCreated(function() {
     tmpl.quillEditor = {};
     // connect to the streamer for changes
     // we watch for events on our field
-    tmpl.streamEventName = tmpl.data.collection + '-' + tmpl.data.docId + '-' + tmpl.data.field + '-delta'
+    tmpl.streamDeltaEventName = tmpl.data.collection + '-' + tmpl.data.docId + '-' + tmpl.data.field + '-delta'
     // new grabs a handle to the exisiting one created by the server
     tmpl.streamer = new Meteor.Streamer('quill-reactive-streamer');
 });
@@ -78,7 +78,7 @@ Template.quillReactive.onRendered(function() {
     });
 
 
-    tmpl.streamer.on(tmpl.streamEventName,applyDelta);
+    tmpl.streamer.on(tmpl.streamDeltaEventName,applyDelta);
     //debug
     window.qe = tmpl;
 
