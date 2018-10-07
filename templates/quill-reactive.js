@@ -1,7 +1,10 @@
 //define using require instead of import
 //since we are using an npm dependency in the same file
 const Quill = require('quill');
+require('quill/dist/quill.snow.css');
 const Delta = require('quill-delta');
+const QuillCursors=require('quill-cursors/dist/quill-cursors.min.js');
+require('quill-cursors/dist/quill-cursors.css');
 require('meteor/rocketchat:streamer');
 
 //log only in debug mode
@@ -63,12 +66,17 @@ Template.quillReactive.onRendered(function() {
     // var authorId = Meteor.user().username;
     // TODO: add authorship
     // TODO: add cursors
+
+    Quill.register('modules/cursors', QuillCursors);
+    Quill.import('modules/cursors')
     tmpl.quillEditor = new Quill('#editor-' + tmpl.data.docId, {
         modules: {
-        'toolbar': '#toolbar'
+        'toolbar': '#toolbar',
+        cursors: true
         },
         theme: 'snow'
     });
+
 
     tmpl.streamer.on(tmpl.streamEventName,applyDelta);
     //debug
