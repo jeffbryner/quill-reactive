@@ -33,6 +33,10 @@ applyCursor = function (cursorEvent){
     tmpl.cursors.update();
 }
 
+deleteCursorListener = function(deleteEvent){
+    tmpl.cursors.removeCursor(deleteEvent.userid);
+}
+
 textChangesListener = function(delta, oldDelta, source) {
     //console.log('text change listener called',delta, oldDelta, source);
     if (source === 'user') {
@@ -49,11 +53,20 @@ textSelectionListener = function(range, oldRange, source) {
         if (tmpl.streamer && range){
             // fixup strange bug where cursor is off by one
             range.index = Math.max(0,range.index-1);
+            // pick the best name/id, accounting for updates
+            if ( Meteor.user() ){
+                tmpl.cursors.userid = Meteor.user()._id || new Mongo.ObjectID()._str;
+                tmpl.cursors.userName = Meteor.user().username || Meteor.user().emails[0].address || 'unknown';
+            }else{
+                tmpl.cursors.userid = new Mongo.ObjectID()._str;
+                tmpl.cursors.userName='unknown';
+            }
+
             cursorEvent={
                 userid:tmpl.cursors.userid,
                 range: range,
-                name: 'User 1',
-                color: 'red'}
+                name: tmpl.cursors.userName,
+                color: tmpl.cursors.color}
             tmpl.streamer.emit(tmpl.streamCursorEventName,cursorEvent);
             console.log('emitted', cursorEvent);
         }
@@ -82,8 +95,9 @@ Template.quillReactive.onCreated(function() {
     tmpl.quillEditor = {};
     // connect to the streamer for changes
     // we watch for events on our field
-    tmpl.streamDeltaEventName = tmpl.data.collection + '-' + tmpl.data.docId + '-' + tmpl.data.field + '-delta'
-    tmpl.streamCursorEventName = tmpl.data.collection + '-' + tmpl.data.docId + '-' + tmpl.data.field + '-cursor'
+    tmpl.streamDeltaEventName = tmpl.data.collection + '-' + tmpl.data.docId + '-' + tmpl.data.field + '-delta';
+    tmpl.streamCursorEventName = tmpl.data.collection + '-' + tmpl.data.docId + '-' + tmpl.data.field + '-cursor';
+    tmpl.streamCursorDeleteName = tmpl.data.collection + '-' + tmpl.data.docId + '-' + tmpl.data.field + '-cursor-delete';
     // new grabs a handle to the exisiting one created by the server
     tmpl.streamer = new Meteor.Streamer('quill-reactive-streamer');
 });
@@ -93,23 +107,37 @@ Template.quillReactive.onRendered(function() {
     // var authorId = Meteor.user().username;
     // TODO: add authorship
     // TODO: add cursors
+    var toolbarOptions = [
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+        [{ 'font': [] }],
+        ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
 
+        [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+        ['blockquote', 'code-block'],
+        [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+        [{ 'align': [] }],
+        [{ 'direction': 'rtl' }]
+      ];
     Quill.register('modules/cursors', QuillCursors);
     Quill.import('modules/cursors')
     tmpl.quillEditor = new Quill('#editor-' + tmpl.data.docId, {
         modules: {
-        'toolbar': '#toolbar',
+        'toolbar': toolbarOptions,
         cursors: {  autoRegisterListener: false,
                     hideDelay:1000}
         },
         theme: 'snow'
     });
     tmpl.cursors = tmpl.quillEditor.getModule('cursors');
-    tmpl.cursors.userid = Math.floor(Math.random(0,10)*10);
-
+    tmpl.cursors.userid = new Mongo.ObjectID()._str;
+    tmpl.cursors.color = '#' + Math.floor(Math.random()*16777215).toString(16);
 
     tmpl.streamer.on(tmpl.streamDeltaEventName,applyDelta);
     tmpl.streamer.on(tmpl.streamCursorEventName, applyCursor);
+    tmpl.streamer.on(tmpl.streamCursorDeleteName, deleteCursorListener);
     //debug
     window.qe = tmpl;
 
@@ -171,10 +199,19 @@ Template.quillReactive.onRendered(function() {
             if (tmpl.quillEditor){
                 tmpl.quillEditor.off("text-change", textChangesListener);
                 tmpl.quillEditor.off('selection-change', textSelectionListener);
+                console.log('removing cursor for userid: ' + tmpl.cursors.userid);
+                tmpl.streamer.emit(tmpl.streamCursorDeleteName,{userid:tmpl.cursors.userid});
+                tmpl.cursors.removeCursor(tmpl.cursors.userid);
             }
         }
     });
 });
+
+Template.quillReactive.destroyed = function () {
+    // remove any cursor we've registered
+    console.log('removing cursor for userid: ' + this.cursors.userid);
+    this.streamer.emit(this.streamCursorDeleteName,{userid:this.cursors.userid});
+};
 
 Template.quillReactive.events({
   'click .ql-save': function(e, tmpl) {
