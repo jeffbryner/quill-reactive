@@ -22,6 +22,7 @@ Package.onUse(function(api) {
   api.use('modules@0.12.0');
   api.use('dburles:mongo-collection-instances@0.3.4');
   api.use('rocketchat:streamer@0.6.2');
+  api.addFiles('templates/quill-reactive.css', 'client');
   api.addFiles('templates/quill-reactive.html', 'client');
   api.addFiles('templates/quill-reactive.js', 'client');
   api.addFiles('methods/server-methods.js', 'server');
