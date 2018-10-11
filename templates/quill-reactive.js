@@ -51,15 +51,11 @@ textSelectionListener = function(range, oldRange, source) {
     //console.log('text selection listener called',range, oldRange, source);
     if (source === 'user') {
         if (tmpl.streamer && range){
-            // fixup strange bug where cursor is off by one
-            range.index = Math.max(0,range.index-1);
-            // pick the best name/id, accounting for updates
+
+            // If we've got a meteor.user, use it
             if ( Meteor.user() ){
                 tmpl.cursors.userid = Meteor.user()._id || new Mongo.ObjectID()._str;
                 tmpl.cursors.userName = Meteor.user().username || Meteor.user().emails[0].address || 'unknown';
-            }else{
-                tmpl.cursors.userid = new Mongo.ObjectID()._str;
-                tmpl.cursors.userName='unknown';
             }
 
             cursorEvent={
@@ -123,23 +119,28 @@ Template.quillReactive.onRendered(function() {
       ];
     Quill.register('modules/cursors', QuillCursors);
     Quill.import('modules/cursors')
-    tmpl.quillEditor = new Quill('#editor-' + tmpl.data.docId, {
+    tmpl.quillEditor = new Quill('#quill-editor-' + tmpl.data.docId, {
         modules: {
         'toolbar': toolbarOptions,
         cursors: {  autoRegisterListener: false,
                     hideDelay:1000}
         },
+        scrollingContainer: "#quill-container-" + tmpl.data.docId,
         theme: 'snow'
     });
     tmpl.cursors = tmpl.quillEditor.getModule('cursors');
+    // set defaults which will be overridden
+    // with Meteor.User values once the listener kicks in
     tmpl.cursors.userid = new Mongo.ObjectID()._str;
+    tmpl.cursors.userName='unknown';
     tmpl.cursors.color = '#' + Math.floor(Math.random()*16777215).toString(16);
 
+    // setup the streaming listeners
     tmpl.streamer.on(tmpl.streamDeltaEventName,applyDelta);
     tmpl.streamer.on(tmpl.streamCursorEventName, applyCursor);
     tmpl.streamer.on(tmpl.streamCursorDeleteName, deleteCursorListener);
     //debug
-    window.qe = tmpl;
+    //window.qe = tmpl;
 
     // Fix link tooltip from getting stuck
     tmpl.$('.ql-container').mousedown(function(e) {
@@ -214,20 +215,20 @@ Template.quillReactive.destroyed = function () {
 };
 
 Template.quillReactive.events({
-  'click .ql-save': function(e, tmpl) {
-    saveQuillContents(tmpl);
-  },
-  'click .ql-reconnect': function(e, tmpl) {
-    Meteor.reconnect();
-  },
-  // input isn't enough since toolbar changes don't trigger
-  'input .ql-editor': _.debounce(function(e,tmpl){
-      console.log('editor debounce input');
-      saveQuillContents(tmpl);
-  } , 500),
-  // toolbar format changes aren't capture by the input event
-  'click .ql-toolbar': _.debounce(function(e,tmpl){
-    console.log('editor debounce format change');
-    saveQuillContents(tmpl);
-} , 500),
+    'click .ql-save': function(e, tmpl) {
+        saveQuillContents(tmpl);
+    },
+    'click .ql-reconnect': function(e, tmpl) {
+        Meteor.reconnect();
+    },
+    // input isn't enough since toolbar changes don't trigger
+    'input .ql-editor': _.debounce(function(e,tmpl){
+        console.log('editor debounce input');
+        saveQuillContents(tmpl);
+    } , 500),
+    // toolbar format changes aren't capture by the input event
+    'click .ql-toolbar': _.debounce(function(e,tmpl){
+        console.log('editor debounce format change');
+        saveQuillContents(tmpl);
+    } , 500),
 });
