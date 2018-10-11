@@ -1,15 +1,11 @@
 <template name="quillReactive">
-    <div id="scrolling-container">
-        <div id="quill-container">
-            <div class="ql-containers">
-                <div id="status" class="status">
-                    <button class='ql-save'>save</button>
-                </div>
-                <div class="ql-editor" id="editor-{{docId}}">
-                    <div contenteditable=true spellcheck=false></div>
-                </div>
-            </div>
+
+    <div id="status" class="status">
+        <button class='ql-save'>save</button>
+    </div>
+    <div class="ql-container ql-reactive-container" id="quill-container-{{docId}}">
+        <div class="ql-editor ql-reactive-editor" id="quill-editor-{{docId}}">
+            <div contenteditable=true spellcheck=false></div>
         </div>
     </div>
-
 </template>
