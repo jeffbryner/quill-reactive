@@ -25,16 +25,8 @@
   }
 
   /* override the quill cursor container positioning */
-  .ql-cursor .ql-cursor-caret-container {
+  span.ql-cursor span.ql-cursor-caret-container {
     margin-left: -18px;
     padding: 0 9px;
     z-index: 1;
-  }
-  .ql-cursor .ql-cursor-caret-container .ql-cursor-caret {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    margin-left: -1px;
-    background-color: attr(data-color);
   }
