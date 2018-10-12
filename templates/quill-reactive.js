@@ -52,8 +52,8 @@ textSelectionListener = function(range, oldRange, source) {
     if (source === 'user') {
         if (tmpl.streamer && range){
 
-            // If we've got a meteor.user, use it
-            if ( Meteor.user() ){
+            // If accounts are a module and we've got a meteor.user, use it
+            if ( 'user' in Meteor && Meteor.user() ){
                 tmpl.cursors.userid = Meteor.user()._id || new Mongo.ObjectID()._str;
                 tmpl.cursors.userName = Meteor.user().username || Meteor.user().emails[0].address || 'unknown';
             }
