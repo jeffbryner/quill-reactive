@@ -1,6 +1,6 @@
 Update/fork of the quill-reactive project from https://github.com/jonlachlan/quill-reactive to support simple live editing
 
-This package is currently version 0.0.12 and now includes live cursor!
+This package now includes live cursors!
 
 # quill-reactive
 
