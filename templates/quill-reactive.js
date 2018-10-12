@@ -101,8 +101,6 @@ Template.quillReactive.onCreated(function() {
 Template.quillReactive.onRendered(function() {
     tmpl = this;
     // var authorId = Meteor.user().username;
-    // TODO: add authorship
-    // TODO: add cursors
     var toolbarOptions = [
         [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
         [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
