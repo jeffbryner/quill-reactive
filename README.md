@@ -1,6 +1,6 @@
 Update/fork of the quill-reactive project from https://github.com/jonlachlan/quill-reactive to support simple live editing
 
-This package is currently version 0.0.11, suitable for community testing and feedback. See the todos section below for development plans.
+This package is currently version 0.0.12 and now includes live cursor!
 
 # quill-reactive
 
@@ -35,13 +35,12 @@ This package combines the features of Quill with the data reactivity of Meteor. 
 
 ### Offline Edits/ Late Updates / Drafts
 
-Only live editing is supported in this fork to allow for a simpler update model.
+Only live online editing is supported in this fork to allow for a simpler update model.
 
 
-## Todos
+## Possible Todos
 
 * Authorship tracking
-* Multiple cursors
 * Customizable settings helpers (e.g., toolbar buttons)
 * Consider offline modes
 
