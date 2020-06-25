@@ -6,7 +6,6 @@ This package now includes live cursors!
 
 Helpers for QuillJS rich text (WYSIWYG) editor, with live editing similar to Google Docs or Etherpad.
 
-You can see a demo of it here: http://quill-realtime-demo.jeffbryner.com:3000/
 
 To add it to your project:
 
